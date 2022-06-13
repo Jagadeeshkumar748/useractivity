@@ -1,0 +1,104 @@
+syntax = "proto3";
+
+package user;
+
+
+option go_package= "github.com/Jagadeeshkumar748/useractivity/user";
+
+service UserActivity{
+    rpc AddUser (UserRequest) returns (UserResponse){}
+    rpc QueryUser(QueryUserRequest) returns (QueryUserResponse){}
+    rpc AddActivity(ActivityRequest) returns (ActivityResponse){}
+    rpc QueryActivity(QueryActivityRequest) returns (QueryActivityResponse){}
+    // rpc UpdateActivity(UpdateActivityRequest) returns (UpdateActivityResponse){}
+    // rpc IsBool (IsBoolReq) returns (IsBoolRes){}
+    // rpc IsValid (IsValidReq) returns (IsValidRes){}
+}
+
+message User{
+    string userid = 1;
+    string name = 2;
+    string email = 3;
+    string phone = 4;
+}
+
+message UserRequest {
+    User user = 1;
+}
+
+message UserResponse {
+    User user = 1;
+}
+
+message QueryUserRequest{
+    string userid = 1;
+}
+
+message QueryUserResponse{
+    User user = 1;
+}
+
+
+
+message Activity {
+    string id = 1;
+    enum ActivityType{
+        Play = 0;
+        Sleep = 1;
+        Eat = 2;
+        Read = 3;
+    
+    }
+    ActivityType activityType = 2;
+    int64 timestamp = 3;
+    int64 duration = 4;
+    string label = 5;
+    string email = 6;
+}
+
+
+message ActivityRequest{
+    Activity activity = 1;
+}
+
+message ActivityResponse{
+    Activity activity = 1;
+}
+
+message QueryActivityRequest{
+    string activityid = 1;
+
+}
+
+message QueryActivityResponse{
+    Activity activity = 1;
+
+}
+
+
+
+
+// message UpdateActivityRequest {
+//     Activity activity = 1;
+// }
+
+// message UpdateActivityResponse {
+//     Activity activity = 1;
+// }
+
+
+// message IsBoolReq {
+//     string id = 1;
+// }
+
+// message IsBoolRes {
+//     bool result = 1;
+// }
+
+// message IsValidReq {
+//     string id = 1;
+// }
+
+// message IsValidRes {
+//     bool valid = 1;
+// }
