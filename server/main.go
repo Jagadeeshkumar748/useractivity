@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"time"
 
 	"github.com/Jagadeeshkumar748/useractivity/user"
 	"go.mongodb.org/mongo-driver/bson"
@@ -32,12 +33,13 @@ type UserItem struct {
 	Phone string             `bson:"phone"`
 }
 
-type ActivityItem struct {
-	ID       primitive.ObjectID `bson:"_id,omitempty"`
-	Type     string             `bson:"type"`
-	Duration int64              `bson:"duration"`
-	Label    string             `bson:"label"`
-}
+// type ActivityItem struct {
+// 	ID                    primitive.ObjectID `bson:"_id,omitempty"`
+// 	         `bson:"activitytype"`
+// 	Duration              int64              `bson:"duration"`
+// 	Email                 string             `bson:"emaill"`
+// 	Timestamp             int64              `bson:"timestamp"`
+// }
 
 type Sleep struct {
 	*user.Activity
@@ -193,6 +195,43 @@ func (s *UserActivityServer) AddUser(ctx context.Context, req *user.UserRequest)
 
 }
 
+func (s *UserActivityServer) AddActivity(ctx context.Context, req *user.ActivityRequest) (*user.ActivityResponse, error) {
+	fmt.Println("testing")
+	activity := req.GetActivity()
+	fmt.Println("Email:")
+	email := activity.Email
+	fmt.Println(email)
+	check := usersdb.FindOne(ctx, bson.M{"email": email})
+	fmt.Println("checking COMPLETED")
+	data := UserItem{}
+	if err := check.Decode(&data); err != nil {
+		return nil, status.Errorf(codes.NotFound, fmt.Sprintf("could not find user with the email %s: %v", req.Activity.GetEmail(), err))
+	}
+	activity.Timestamp = time.Now().Unix()
+	fmt.Println(activity.Timestamp)
+	// data1 := ActivityItem{
+	// 	Email:                 activity.GetEmail(),
+	// 	Activity_ActivityType: activity.GetActivityType(),
+	// 	Timestamp:             activity.GetTimestamp(),
+	// 	Duration:              activity.GetDuration(),
+	// }
+
+	result, err := activitydb.InsertOne(mongoCtx, activity)
+
+	if err != nil {
+		return nil, status.Errorf(
+			codes.Internal,
+			fmt.Sprintf("Internal error: %v", err),
+		)
+	}
+	oid := result.InsertedID.(primitive.ObjectID)
+	_ = oid
+	activity.Id = oid.Hex()
+
+	return &user.ActivityResponse{Activity: activity}, nil
+
+}
+
 func (s *UserActivityServer) QueryUser(ctx context.Context, req *user.QueryUserRequest) (*user.QueryUserResponse, error) {
 	oid, err := primitive.ObjectIDFromHex(req.GetUserid())
 
@@ -291,6 +330,7 @@ func main() {
 		fmt.Println("Connected to MongoDB")
 	}
 	usersdb = db.Database("useractivity").Collection("user")
+	activitydb = db.Database("useractivity").Collection("activity")
 	log.Printf("server listening at %v", lis.Addr())
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)

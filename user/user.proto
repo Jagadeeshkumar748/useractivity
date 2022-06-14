@@ -52,8 +52,7 @@ message Activity {
     ActivityType activityType = 2;
     int64 timestamp = 3;
     int64 duration = 4;
-    string label = 5;
-    string email = 6;
+    string email = 5;
 }
 
 
